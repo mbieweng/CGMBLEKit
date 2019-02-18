@@ -24,6 +24,8 @@ class TransmitterSettingsViewController: UITableViewController {
         self.glucoseUnit = glucoseUnit
 
         super.init(style: .grouped)
+
+        cgmManager.addObserver(self)
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -35,10 +37,10 @@ class TransmitterSettingsViewController: UITableViewController {
 
         title = cgmManager.localizedTitle
 
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 44
 
-        tableView.sectionHeaderHeight = UITableViewAutomaticDimension
+        tableView.sectionHeaderHeight = UITableView.automaticDimension
         tableView.estimatedSectionHeaderHeight = 55
 
         tableView.register(SettingsTableViewCell.self, forCellReuseIdentifier: SettingsTableViewCell.className)
@@ -58,49 +60,39 @@ class TransmitterSettingsViewController: UITableViewController {
 
     // MARK: - UITableViewDataSource
 
-    private enum Section: Int {
+    private enum Section: Int, CaseIterable {
         case transmitterID
         case latestReading
         case latestCalibration
         case ages
         case share
         case delete
-
-        static let count = 6
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return Section.count
+        return Section.allCases.count
     }
 
-    private enum LatestReadingRow: Int {
+    private enum LatestReadingRow: Int, CaseIterable {
         case glucose
         case date
         case trend
         case status
-
-        static let count = 4
     }
 
-    private enum LatestCalibrationRow: Int {
+    private enum LatestCalibrationRow: Int, CaseIterable {
         case glucose
         case date
-
-        static let count = 2
     }
 
-    private enum AgeRow: Int {
+    private enum AgeRow: Int, CaseIterable {
         case sensor
         case transmitter
-
-        static let count = 2
     }
 
-    private enum ShareRow: Int {
+    private enum ShareRow: Int, CaseIterable {
         case settings
         case openApp
-
-        static let count = 2
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -108,13 +100,13 @@ class TransmitterSettingsViewController: UITableViewController {
         case .transmitterID:
             return 1
         case .latestReading:
-            return LatestReadingRow.count
+            return LatestReadingRow.allCases.count
         case .latestCalibration:
-            return LatestCalibrationRow.count
+            return LatestCalibrationRow.allCases.count
         case .ages:
-            return AgeRow.count
+            return AgeRow.allCases.count
         case .share:
-            return ShareRow.count
+            return ShareRow.allCases.count
         case .delete:
             return 1
         }
@@ -356,6 +348,15 @@ class TransmitterSettingsViewController: UITableViewController {
         }
 
         return indexPath
+    }
+}
+
+
+extension TransmitterSettingsViewController: TransmitterManagerObserver {
+    func transmitterManagerDidUpdateLatestReading(_ manager: TransmitterManager) {
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
 }
 
